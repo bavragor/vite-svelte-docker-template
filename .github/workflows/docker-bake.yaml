@@ -1,0 +1,117 @@
+name: Docker Build and Push
+on:
+  workflow_call:
+    outputs:
+      docker-image-tag:
+        description: 'The Docker Image Tag a calling workflow should use'
+        value: ${{ jobs.check.outputs.docker-files-changed == 'true' && jobs.bake.outputs.tag || 'latest' }}
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 6' # At 02:00 on Saturday
+
+concurrency:
+  # Documentation suggests ${{ github.head_ref }}, but that's only available on pull_request/pull_request_target triggers, so using ${{ github.ref }}.
+  # On master, we want all builds to complete even if merging happens faster to make it easier to discover at which point something broke.
+  group: docker-bake-${{ github.ref_name == 'master' && format('ci-master-{0}', github.sha) || format('ci-{0}', github.ref) }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      docker-files-changed: ${{ steps.filter.outputs.docker }}
+    steps:
+      - name: Check Out
+        uses: actions/checkout@v4
+
+      - name: Detect Changes to Docker Files
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docker:
+              - '.docker/node/**'
+              - '.github/workflows/docker-bake.yaml'
+              - '.env'
+              - 'docker-compose.yaml'
+
+  bake:
+    runs-on: ubuntu-latest
+    needs: check
+    if: needs.check.outputs.docker-files-changed == 'true'
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    outputs:
+      tag: ${{ steps.docker-image-tag.outputs.tag }}
+
+    timeout-minutes: 30
+    steps:
+      - name: Check Out
+        uses: actions/checkout@v4
+
+      - name: Determine Docker Image Tag
+        id: docker-image-tag
+        run: |
+          REF_TAG=$(echo "${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" | sed 's/[^[:alnum:]\.\_\-]/-/g')
+          [ "$REF_TAG" = "master" ] && REF_TAG=latest
+
+          echo "DOCKER_IMAGE_TAG=$REF_TAG" >> $GITHUB_ENV
+          echo "tag=$REF_TAG" >> $GITHUB_OUTPUT
+
+      - name: Set Up QEMU for additional Platform Support
+        if: steps.docker-image-tag.outputs.tag == 'latest'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: network=host
+
+      - name: Copy Dist Dotenv File
+        run: cp .env.build .env
+
+      - name: Dump UID & GID
+        id: docker-workspace-user
+        shell: bash
+        run: |
+          echo "uid=$(id -u)" >> $GITHUB_OUTPUT
+          echo "gid=$(id -g)" >> $GITHUB_OUTPUT
+
+      - name: Change env uid and gid
+        shell: bash
+        run: |
+          echo "UID=${{ steps.docker-workspace-user.outputs.uid }}" >> .env
+          echo "GID=${{ steps.docker-workspace-user.outputs.gid }}" >> .env
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bake and Push Docker Images (PR)
+        if: steps.docker-image-tag.outputs.tag != 'latest'
+        uses: docker/bake-action@v5.7.0
+        with:
+          source: .
+          push: true
+          set: |
+            *.platform=linux/amd64
+            app.tags=ghcr.io/${{ github.repository }}:${{ steps.docker-image-tag.outputs.tag }}
+
+      - name: Bake and Push Docker Images (Master)
+        if: steps.docker-image-tag.outputs.tag == 'latest'
+        uses: docker/bake-action@v5.7.0
+        with:
+          source: .
+          push: true
+          set: |
+            *.platform=linux/amd64,linux/arm64
+            app.tags=ghcr.io/${{ github.repository }}:${{ steps.docker-image-tag.outputs.tag }}

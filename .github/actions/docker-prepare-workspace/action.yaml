@@ -1,0 +1,88 @@
+name: Prepare Docker Workspace
+description: 'Prepares environment and caches to run workflows utilizing Docker'
+
+inputs:
+  docker-compose-excludes:
+    required: false
+    default: ''
+    description: 'Docker Compose services to exclude (empty string for none)'
+  docker-compose-services:
+    required: false
+    default: ''
+    description: 'Docker Compose services to start (empty string for all)'
+  docker-image-tag:
+    required: false
+    default: 'latest'
+    description: 'Value to export as DOCKER_IMAGE_TAG'
+  make-init-targets:
+    required: true
+    description: 'Make targets to execute to finish initialization'
+  github_token:
+    description: 'GitHub token to authenticate API requests.'
+    required: true
+
+outputs:
+  docker-compose-services:
+    description: 'Services started after docker-compose-excludes was applied'
+    value: ${{ steps.compose-services.outputs.services }}
+
+runs:
+  using: composite
+  steps:
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github_token }}
+
+    - name: Concatenate Dotenv File
+      shell: bash
+      run: cat .env.build >> .env
+
+    - name: Dump UID & GID
+      id: docker-workspace-user
+      shell: bash
+      run: |
+        echo "uid=$(id -u)" >> $GITHUB_OUTPUT
+        echo "gid=$(id -g)" >> $GITHUB_OUTPUT
+
+    - name: Change env uid and gid
+      shell: bash
+      run: |
+        echo "UID=${{ steps.docker-workspace-user.outputs.uid }}" >> .env
+        echo "GID=${{ steps.docker-workspace-user.outputs.gid }}" >> .env
+
+    - name: Determine Docker Compose Services to Start
+      id: compose-services
+      shell: bash
+      run: |
+        services=(${{ inputs.docker-compose-services }})
+
+        if [[ "${services[*]}" = "" ]]; then
+            services=($(docker compose config --services | sort))
+        fi
+
+        excludes=(${{ inputs.docker-compose-excludes }})
+
+        for exclude in "${excludes[@]}"; do
+          services=("${services[@]/$exclude}")
+        done
+
+        services=$(echo "${services[@]}" | tr -s ' ' | xargs | sort)
+        echo "services=$services" >> $GITHUB_OUTPUT
+
+    - name: Start Docker Compose Services
+      shell: bash
+      run: |
+        docker compose up -d --no-build --no-deps --quiet-pull --wait ${{ steps.compose-services.outputs.services }}
+
+    - name: Run Make Initialization Targets
+      if: inputs.make-init-targets != ''
+      shell: bash
+      run: make ${{ inputs.make-init-targets }}
+
+    - name: Output Used Docker Images
+      if: ${{ success() }}
+      shell: bash
+      run: docker compose images

@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    commit-message:
+      prefix: 'build(deps-node): '
+    labels: []
+    directory: '/'
+    versioning-strategy: increase-if-necessary
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 20
+
+  - package-ecosystem: 'github-actions'
+    commit-message:
+      prefix: 'build(deps-github): '
+    labels: []
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: 'docker'
+    commit-message:
+      prefix: 'build(deps-docker): '
+    labels: []
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 10

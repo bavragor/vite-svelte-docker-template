@@ -1,0 +1,2 @@
+# needed for phpstorm on windows
+node-linker=hoisted
