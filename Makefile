@@ -10,16 +10,19 @@ help:
 	@echo "Usage: make [target]"
 	@echo
 	@echo "Available targets:"
-	@echo "  up           Start the containers (docker compose up)"
-	@echo "  down         Stop and remove the containers (docker compose down)"
-	@echo "  install      Install dependencies using pnpm inside the container"
-	@echo "  restart      Restart the containers (docker compose restart)"
-	@echo "  logs         View logs of the app service"
-	@echo "  exec         Enter the app container with a shell (bash or sh)"
-	@echo "  clean        Stop containers and remove volumes"
-	@echo "  prune        Prune unused Docker volumes and images"
-	@echo "  build        Build or rebuild the Docker containers"
-	@echo "  ps           List running Docker containers"
+	@echo "  up           		Start the containers (docker compose up)"
+	@echo "  down         		Stop and remove the containers (docker compose down)"
+	@echo "  install      		Install dependencies using pnpm inside the container"
+	@echo "  restart      		Restart the containers (docker compose restart)"
+	@echo "  logs         		View logs of the app service"
+	@echo "  exec         		Enter the app container with a shell (bash or sh)"
+	@echo "  clean        		Stop containers and remove volumes"
+	@echo "  prune        		Prune unused Docker volumes and images"
+	@echo "  build        		Build or rebuild the Docker containers"
+	@echo "  ps           		List running Docker containers"
+	@echo "  setup           	Run setup.sh"
+	@echo "  git-enable-hooks	Enable git-hooks"
+	@echo "  git-disable-hooks  Disable git-hooks"
 
 # Start containers
 up:
@@ -74,3 +77,12 @@ ps:
 setup:
 	@echo "Running setup script..."
 	sh setup.sh
+
+git-enable-hooks:
+	@echo "Enabling git-hooks"
+	@git config core.hookspath .git-hooks
+	@chmod +x .git-hooks/*
+
+git-disable-hooks:
+	@echo "Disabling git-hooks"
+	@git config --unset core.hookspath
