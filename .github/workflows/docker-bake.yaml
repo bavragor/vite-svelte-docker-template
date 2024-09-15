@@ -74,20 +74,7 @@ jobs:
           driver-opts: network=host
 
       - name: Copy Dist Dotenv File
-        run: cp .env.build .env
-
-      - name: Dump UID & GID
-        id: docker-workspace-user
-        shell: bash
-        run: |
-          echo "uid=$(id -u)" >> $GITHUB_OUTPUT
-          echo "gid=$(id -g)" >> $GITHUB_OUTPUT
-
-      - name: Change env uid and gid
-        shell: bash
-        run: |
-          echo "UID=${{ steps.docker-workspace-user.outputs.uid }}" >> .env
-          echo "GID=${{ steps.docker-workspace-user.outputs.gid }}" >> .env
+        run: cp .env.dist .env
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
