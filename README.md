@@ -3,7 +3,7 @@
 This template offers the following things, ready to use, in a dockerized environment:
 
 - [Vite](https://vitejs.dev/)
-- [Svelte 4](https://svelte.dev/) (TS)
+- [Svelte 5](https://svelte-5-preview.vercel.app/docs/introduction) (TS)
 - [ESLint](https://www.npmjs.com/package/eslint)
 - [Prettier](https://prettier.io/)
 - [Svelte-Check](https://www.npmjs.com/package/svelte-check)
