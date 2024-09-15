@@ -18,6 +18,7 @@ on:
   push:
     branches:
       - master
+      - release@*
     paths-ignore:
       - '.git-hooks/*'
       - '.github/**'
