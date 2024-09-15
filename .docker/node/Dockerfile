@@ -24,6 +24,7 @@ WORKDIR /home/node/app
 RUN mkdir -p /home/node/app/.pnpm-store && chown -R node:node /home/node/app/.pnpm-store
 
 RUN mkdir -p /home/node/app/build && chown -R node:node /home/node/app/build
+RUN mkdir -p /home/node/app/dist && chown -R node:node /home/node/app/dist
 
 # Step 5: Set environment variable for pnpm store
 ENV PNPM_STORE_PATH=/home/node/app/.pnpm-store
