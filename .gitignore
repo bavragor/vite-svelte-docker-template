@@ -4,3 +4,5 @@
 build
 dist
 node_modules
+.git-hooks/git-hooks.log
+.git-hooks/pre-commit.patch

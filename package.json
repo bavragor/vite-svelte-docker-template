@@ -17,7 +17,8 @@
     "lint": "pnpm run lint:base -- .",
     "lint:base": "eslint --cache --cache-location='node_modules/.cache/eslint/'",
     "lint:fix": "pnpm run lint:base -- --fix .",
-    "prettier": "prettier --write ."
+    "prettier:base": "prettier",
+    "prettier": "pnpm run prettier:base --write ."
   },
   "devDependencies": {
     "@eslint/js": "^9.10.0",

@@ -75,3 +75,19 @@ make install
 ```
 
 This will run pnpm without symlinks.
+
+## Git Hooks
+
+This template also supports git hooks to ensure code quality and consistency before commits and pushes.
+
+These can be activated with:
+
+```
+make git-enable-hooks
+```
+
+Or deactivated with:
+
+```
+make git-disable-hooks
+```

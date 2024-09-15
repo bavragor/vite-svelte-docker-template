@@ -1,12 +1,9 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vitest/config';
-import {svelteTesting} from "@testing-library/svelte/vite";
+import { svelteTesting } from '@testing-library/svelte/vite';
 
 export default defineConfig({
-  plugins: [
-    svelte({ hot: !process.env.VITEST }),
-    svelteTesting()
-  ],
+  plugins: [svelte({ hot: !process.env.VITEST }), svelteTesting()],
   test: {
     dir: '.',
     reporters: 'dot',
