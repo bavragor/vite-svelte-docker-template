@@ -57,3 +57,21 @@ Or with coverage in build directory
 ```sh
 docker compose exec app pnpm run test:coverage
 ```
+
+## OS specific settings
+
+### Windows + WSL2 + Symlinks + PNPM
+
+In case your running a setup like me,
+WSL2 with Ubuntu and have your IDE running on Windows,
+your IDE may not be able to use symlinks created by pnpm.
+For this scenario you can do the following
+
+```
+cp .npmrc.dist .npmrc
+make build
+make up
+make install
+```
+
+This will run pnpm without symlinks.
