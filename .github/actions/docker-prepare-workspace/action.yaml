@@ -14,9 +14,12 @@ inputs:
     required: false
     default: 'latest'
     description: 'Value to export as DOCKER_IMAGE_TAG'
-  make-init-targets:
+  make-init-targets-before:
     required: true
-    description: 'Make targets to execute to finish initialization'
+    description: 'Make targets to execute before docker container start'
+  make-init-targets-after:
+    required: true
+    description: 'Make targets to execute after docker container start'
   github_token:
     description: 'GitHub token to authenticate API requests.'
     required: true
@@ -35,23 +38,6 @@ runs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ inputs.github_token }}
-
-    - name: Concatenate Dotenv File
-      shell: bash
-      run: cat .env.build >> .env
-
-    - name: Dump UID & GID
-      id: docker-workspace-user
-      shell: bash
-      run: |
-        echo "uid=$(id -u)" >> $GITHUB_OUTPUT
-        echo "gid=$(id -g)" >> $GITHUB_OUTPUT
-
-    - name: Change env uid and gid
-      shell: bash
-      run: |
-        echo "UID=${{ steps.docker-workspace-user.outputs.uid }}" >> .env
-        echo "GID=${{ steps.docker-workspace-user.outputs.gid }}" >> .env
 
     - name: Determine Docker Compose Services to Start
       id: compose-services
@@ -72,15 +58,20 @@ runs:
         services=$(echo "${services[@]}" | tr -s ' ' | xargs | sort)
         echo "services=$services" >> $GITHUB_OUTPUT
 
+    - name: Run Make Initialization Targets
+      if: inputs.make-init-targets-before != ''
+      shell: bash
+      run: make ${{ inputs.make-init-targets-before }}
+
     - name: Start Docker Compose Services
       shell: bash
       run: |
         docker compose up -d --no-build --no-deps --quiet-pull --wait ${{ steps.compose-services.outputs.services }}
 
     - name: Run Make Initialization Targets
-      if: inputs.make-init-targets != ''
+      if: inputs.make-init-targets-after != ''
       shell: bash
-      run: make ${{ inputs.make-init-targets }}
+      run: make ${{ inputs.make-init-targets-after }}
 
     - name: Output Used Docker Images
       if: ${{ success() }}

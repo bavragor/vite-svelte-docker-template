@@ -70,3 +70,7 @@ build:
 ps:
 	@echo "Listing running containers..."
 	docker compose -f $(DOCKER_COMPOSE_FILE) ps
+
+setup:
+	@echo "Running setup script..."
+	sh setup.sh

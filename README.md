@@ -15,9 +15,15 @@ This template offers the following things, ready to use, in a dockerized environ
 npx degit bavragor/vite-svelte-docker-template app-name
 ```
 
+## Requirements
+
+- Docker
+- make
+
 ## Installation
 
 ```sh
+make setup
 make up
 make install
 ```
