@@ -11,8 +11,17 @@ This template offers the following things, ready to use, in a dockerized environ
 
 ## Create with it!
 
+Create with Svelte 4 (default):
+
 ```sh
 npx degit bavragor/vite-svelte-docker-template app-name
+npx degit bavragor/vite-svelte-docker-template#release@svelte4.2 svelte4-app-name
+```
+
+Create with Svelte 5 (experimental):
+
+```sh
+npx degit bavragor/vite-svelte-docker-template#release@svelte5 svelte5-app-name
 ```
 
 ## Requirements
