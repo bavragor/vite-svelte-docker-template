@@ -65,6 +65,8 @@ runs:
 
     - name: Start Docker Compose Services
       shell: bash
+      env:
+        GITHUB_ACTOR: ${{ github.actor }}
       run: |
         docker compose up -d --no-build --no-deps --quiet-pull --wait ${{ steps.compose-services.outputs.services }}
 

@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/bavragor/${DOCKER_IMAGE_TAG:-vite-svelte-docker-template:latest}
+    image: ghcr.io/${GITHUB_ACTOR:-tony-stark-eth}/${DOCKER_IMAGE_TAG:-vite-svelte-docker-template:latest}
     container_name: docker-pnpm-svelte
     build:
       context: .
