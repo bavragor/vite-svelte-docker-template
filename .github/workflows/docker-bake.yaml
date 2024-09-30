@@ -88,7 +88,7 @@ jobs:
 
       - name: Bake and Push Docker Images (PR)
         if: steps.docker-image-tag.outputs.tag != 'latest'
-        uses: docker/bake-action@v5.7.0
+        uses: docker/bake-action@v5.9.0
         with:
           source: .
           push: true
@@ -98,7 +98,7 @@ jobs:
 
       - name: Bake and Push Docker Images (Master)
         if: steps.docker-image-tag.outputs.tag == 'latest'
-        uses: docker/bake-action@v5.7.0
+        uses: docker/bake-action@v5.9.0
         with:
           source: .
           push: true
